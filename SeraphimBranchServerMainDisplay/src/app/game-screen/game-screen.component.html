@@ -1,0 +1,23 @@
+<div class="timerDiv">
+  <div class="timeElement" [ngStyle]="customStyles">
+    {{ time?.hours }} : {{ time?.minutes }} : {{ time?.seconds }}
+  </div>
+</div>
+
+<div class="hintDiv">
+  <div #hintElem [ngStyle]="hintTextSize">
+    <p [ngStyle]="customStyles">{{ hintText }}</p>
+  </div>
+</div>
+
+<div id="videoDiv" name="videoDiv">
+  <video #videoElem></video>
+</div>
+
+<div id="videoDivOverride" name="videoDivOverride">
+  <video #videoElemOverride [ngStyle]="videoOverrideStyle"></video>
+</div>
+
+<div id="audioDiv">
+  <audio #audioElem></audio>
+</div>
