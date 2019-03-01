@@ -270,6 +270,9 @@ export class GameScreenComponent implements OnInit {
   }
 
   parseHint(msg) {
+    if (msg.hintText == undefined) {
+      return;
+    }
     if (msg.hintText == "--clear--") {
       this.hintText = "";
     } else {
