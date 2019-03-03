@@ -288,7 +288,11 @@ export class GameScreenComponent implements OnInit {
       this.playHintAudio();
     }
   }
-  parseVideo(msg) {}
+  parseVideo(msg) {
+    let api = this.rootServer.branchApi;
+    let path = `${api}/${msg.videoFile}`;
+    this.playCustomVideo(path, false, false);
+  }
 
   // =============================================================
   // =============================================================
