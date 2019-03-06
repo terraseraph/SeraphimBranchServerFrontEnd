@@ -3,7 +3,7 @@ import { Routes, RouterModule } from "@angular/router";
 import { GameScreenComponent } from "./game-screen/game-screen.component";
 
 const routes: Routes = [
-  { path: "gamescreen/:name", component: GameScreenComponent }
+  { path: "gamescreen/:name/:screenName", component: GameScreenComponent }
 ];
 
 @NgModule({

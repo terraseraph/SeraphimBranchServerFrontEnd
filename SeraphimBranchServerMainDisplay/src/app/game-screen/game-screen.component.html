@@ -1,17 +1,22 @@
-<div class="timerDiv">
-  <div class="timeElement" [ngStyle]="customStyles">
+<div class="timerDiv" *ngIf="showTimer">
+  <div class="timeElement" [ngStyle]="customFontStyle">
     {{ time?.hours }} : {{ time?.minutes }} : {{ time?.seconds }}
   </div>
 </div>
 
-<div class="hintDiv">
+<div class="hintDiv" *ngIf="showHints">
   <div #hintElem [ngStyle]="hintTextSize">
-    <p [ngStyle]="customStyles">{{ hintText }}</p>
+    <p [ngStyle]="customFontStyle">{{ hintText }}</p>
   </div>
 </div>
 
 <div id="videoDiv" name="videoDiv">
   <video #videoElem></video>
+</div>
+
+
+<div id="imageDiv" name="imageDiv">
+  <img #imageElem>
 </div>
 
 <div id="videoDivOverride" name="videoDivOverride">

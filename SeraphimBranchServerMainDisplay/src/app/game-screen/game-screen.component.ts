@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { RouterModule, Routes, ActivatedRoute } from "@angular/router";
+import { RouterModule, Routes, ActivatedRoute, Router } from "@angular/router";
 import { SocketsService } from "../sockets.service";
 import { Subscription } from "rxjs";
 import { RootServerService } from "../root-server.service";
@@ -23,6 +23,9 @@ export class GameScreenComponent implements OnInit {
 
   // Script vars
   scriptName: any;
+  screenName: any;
+  screenConfig: any;
+
   script: any;
   socketSubscription: Subscription;
   time: any;
@@ -45,12 +48,16 @@ export class GameScreenComponent implements OnInit {
   hintText: any;
 
   // Custom Configs
-  customStyles: any;
+  customFontStyle: any;
   hintTextSize: any;
+  showTimer: boolean;
+  showHints: boolean;
+  defaultBackgroundIsVideo: boolean;
 
   videoOverrideStyle: any;
 
   @ViewChild("videoElem") videoElem: any;
+  @ViewChild("imageElem") imageElem: any;
   @ViewChild("videoElemOverride") videoElemOverride: any;
   @ViewChild("hintElem") hintElem: any;
   @ViewChild("audioElem") audioElem: any;
@@ -60,31 +67,93 @@ export class GameScreenComponent implements OnInit {
     this.rootApi = this.rootServer.api;
     this.route.paramMap.subscribe(params => {
       this.scriptName = params.get("name");
+      this.screenName = params.get("screenName");
       console.log(this.scriptName);
+      console.log(this.screenName);
       this.getScript(this.scriptName);
-      this.getScreenConfig();
+      // this.getScreenConfig();
     });
     this.socketSubscribe();
   }
 
+  // getScreenConfig() {
+  //   let configs = this.configService.screenConfig.configs;
+  //   for (var i = 0; i < configs.length; i++) {
+  //     if (configs[i].name === this.scriptName) {
+  //       this.customStyles = configs[i].style;
+  //     }
+  //   }
+  //   this.hintTextSize = {
+  //     "font-size": "6vw"
+  //   };
+  // }
+
+  getScript(scriptName: any) {
+    this.rootServer.loadScript(scriptName).subscribe(script => {
+      this.script = script;
+      this.getScreenConfig();
+    });
+  }
   getScreenConfig() {
-    let configs = this.configService.screenConfig.configs;
+    let configs = this.script.screenConfigs;
     for (var i = 0; i < configs.length; i++) {
-      if (configs[i].name === this.scriptName) {
-        this.customStyles = configs[i].style;
+      if (configs[i].name === this.screenName) {
+        //     this.screenConfig = configs[i];
+        //     console.log(this.screenConfig);
+
+        //     // Show the timer
+        //     this.showTimer = configs[i].showTimer;
+
+        //     // Show hints
+        //     this.showHints = configs[i].showHints;
+
+        //     //Custom screen font
+        //     this.customFontStyle = {
+        //       "font-family": configs[i].font,
+        //       color: configs[i].font_colour
+        //     };
+
+        //     // Set default background type
+        //     if (configs[i].backgroundType === "Video") {
+        //       this.initVideo(configs[i].backgroundPath);
+        //       this.defaultBackgroundIsVideo = true;
+        //     } else {
+        //       this.defaultBackgroundIsVideo = false;
+        // }
+        //     this.initAudio();
+        this.setConfigs(configs[i]);
       }
     }
+
     this.hintTextSize = {
       "font-size": "6vw"
     };
   }
 
-  getScript(scriptName: any) {
-    this.rootServer.loadScript(scriptName).subscribe(script => {
-      this.script = script;
-      this.initAudio();
-      this.initVideo();
-    });
+  setConfigs(configs) {
+    this.screenConfig = configs;
+    console.log(this.screenConfig);
+
+    // Show the timer
+    this.showTimer = configs.showTimer;
+
+    // Show hints
+    this.showHints = configs.showHints;
+
+    //Custom screen font
+    this.customFontStyle = {
+      "font-family": configs.font,
+      color: configs.font_colour
+    };
+
+    // Set default background type
+    if (configs.backgroundType === "Video") {
+      this.initVideo(configs.backgroundPath);
+      this.defaultBackgroundIsVideo = true;
+    } else {
+      this.defaultBackgroundIsVideo = false;
+    }
+    this.initAudio();
   }
 
   initAudio() {
@@ -141,7 +210,7 @@ export class GameScreenComponent implements OnInit {
     }
   }
 
-  initVideo() {
+  initVideo(videoPath) {
     //For background video
     this.videoElem.nativeElement.setAttribute("width", "100%");
     this.videoElem.nativeElement.setAttribute("height", "100%");
@@ -152,17 +221,39 @@ export class GameScreenComponent implements OnInit {
     this.videoElemOverride.nativeElement.setAttribute("height", "100%");
     this.videoElemOverride.nativeElement.setAttribute("type", "video/mp4");
     this.enableVideoOverride(false);
-    for (let trigger of this.script.triggers) {
-      if (trigger.video != "") {
-        if (trigger.video_type == "background") {
-          this.playBackgroundVideo(
-            trigger.video,
-            trigger.loop_video,
-            trigger.pause_timer
-          );
-        }
-      }
-    }
+    this.playBackgroundVideo(videoPath, true, false);
+  }
+  // initVideo() {
+  //   //For background video
+  //   this.videoElem.nativeElement.setAttribute("width", "100%");
+  //   this.videoElem.nativeElement.setAttribute("height", "100%");
+  //   this.videoElem.nativeElement.setAttribute("type", "video/mp4");
+
+  //   //For Playing videos over the top
+  //   this.videoElemOverride.nativeElement.setAttribute("width", "100%");
+  //   this.videoElemOverride.nativeElement.setAttribute("height", "100%");
+  //   this.videoElemOverride.nativeElement.setAttribute("type", "video/mp4");
+  //   this.enableVideoOverride(false);
+  //   for (let trigger of this.script.triggers) {
+  //     if (trigger.video != "") {
+  //       if (trigger.video_type == "background") {
+  //         this.playBackgroundVideo(
+  //           trigger.video,
+  //           trigger.loop_video,
+  //           trigger.pause_timer
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
+
+  initImage(imagePath) {
+    this.imageElem.nativeElement.setAttribute("width", "100%");
+    this.imageElem.nativeElement.setAttribute("height", "100%");
+    this.imageElem.nativeElement.setAttribute(
+      "src",
+      `${this.branchApi}/${imagePath}`
+    );
   }
 
   enableVideoOverride(show) {
@@ -188,9 +279,21 @@ export class GameScreenComponent implements OnInit {
             console.log(message);
           }
         }
+        if (message.hasOwnProperty("reload")) {
+          if (
+            message.scriptName === this.scriptName &&
+            message.screenName === this.screenName
+          ) {
+            window.location.reload();
+          }
+        }
         if (message.hasOwnProperty("message_type")) {
-          if (message.scriptName === this.scriptName) {
+          if (
+            message.scriptName === this.scriptName &&
+            message.screenName === this.screenName
+          ) {
             let msg = message;
+
             switch (message.message_type) {
               case "trigger":
                 this.parseTrigger(msg);
@@ -204,9 +307,13 @@ export class GameScreenComponent implements OnInit {
               case "video":
                 this.parseVideo(msg);
                 break;
+              case "config":
+                this.setConfigs(msg.config);
               default:
                 break;
             }
+          } else if (message.message_type === "hint") {
+            this.parseHint(message);
           }
         }
       });
@@ -291,7 +398,7 @@ export class GameScreenComponent implements OnInit {
   parseVideo(msg) {
     let api = this.rootServer.branchApi;
     let path = `${api}/${msg.videoFile}`;
-    this.playCustomVideo(path, false, false);
+    this.playCustomVideo(msg.videoFile, false, false);
   }
 
   // =============================================================
