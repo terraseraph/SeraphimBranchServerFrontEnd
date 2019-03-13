@@ -183,7 +183,8 @@ export class GameScreenComponent implements OnInit {
 
   parseAudioType(type, path, loop) {
     let api = this.rootServer.branchApi;
-    path = `${api}/${path}`;
+    // path = `${api}/${path}`;
+    path = `${path}`;
     switch (type) {
       case "start":
         this.startAudio = new Audio(path);
@@ -250,10 +251,7 @@ export class GameScreenComponent implements OnInit {
   initImage(imagePath) {
     this.imageElem.nativeElement.setAttribute("width", "100%");
     this.imageElem.nativeElement.setAttribute("height", "100%");
-    this.imageElem.nativeElement.setAttribute(
-      "src",
-      `${this.branchApi}/${imagePath}`
-    );
+    this.imageElem.nativeElement.setAttribute("src", `${imagePath}`);
   }
 
   enableVideoOverride(show) {
@@ -345,7 +343,8 @@ export class GameScreenComponent implements OnInit {
     }
 
     if (msg.trigger.audio != "") {
-      let path = `${api}/${msg.trigger.audio}`;
+      // let path = `${api}/${msg.trigger.audio}`;
+      let path = `${msg.trigger.audio}`;
       // this.audioElem.nativeElement.src = `${api}/${msg.trigger.audio}`;
       switch (msg.trigger.audio_type) {
         case "start":
@@ -397,7 +396,8 @@ export class GameScreenComponent implements OnInit {
   }
   parseVideo(msg) {
     let api = this.rootServer.branchApi;
-    let path = `${api}/${msg.videoFile}`;
+    // let path = `${api}/${msg.videoFile}`;
+    let path = `${msg.videoFile}`;
     this.playCustomVideo(msg.videoFile, false, false);
   }
 
@@ -408,7 +408,8 @@ export class GameScreenComponent implements OnInit {
   // =============================================================
   parseAudio(msg) {
     let api = this.rootServer.branchApi;
-    let path = `${api}/${msg.audioFile}`;
+    // let path = `${api}/${msg.audioFile}`;
+    let path = `${msg.audioFile}`;
     this.customAudio = new Audio(path);
     this.playCustomAudio();
   }
@@ -482,13 +483,15 @@ export class GameScreenComponent implements OnInit {
   }
 
   playBackgroundVideo(path, loop, pauseTimer) {
-    path = `${this.branchApi}/${path}`;
+    // path = `${this.branchApi}/${path}`;
+    path = `${path}`;
     this.videoElem.nativeElement.src = path;
     this.videoElem.nativeElement.play();
     this.videoElem.nativeElement.loop = loop;
   }
   playCustomVideo(path, loop, pauseTimer) {
-    path = `${this.branchApi}/${path}`;
+    // path = `${this.branchApi}/${path}`;
+    path = `${path}`;
     this.enableVideoOverride(true);
     this.videoElemOverride.nativeElement.src = path;
     this.videoElemOverride.nativeElement.play();
