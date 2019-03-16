@@ -18,7 +18,6 @@ export class GameScreenComponent implements OnInit {
     public configService: ConfigService
   ) {}
 
-  branchApi: any;
   rootApi: any;
 
   // Script vars
@@ -63,8 +62,6 @@ export class GameScreenComponent implements OnInit {
   @ViewChild("audioElem") audioElem: any;
 
   ngOnInit() {
-    this.branchApi = this.rootServer.branchApi;
-    this.rootApi = this.rootServer.api;
     this.route.paramMap.subscribe(params => {
       this.scriptName = params.get("name");
       this.screenName = params.get("screenName");
@@ -182,7 +179,7 @@ export class GameScreenComponent implements OnInit {
   }
 
   parseAudioType(type, path, loop) {
-    let api = this.rootServer.branchApi;
+    // let api = this.rootServer.branchApi;
     // path = `${api}/${path}`;
     path = `${path}`;
     switch (type) {
@@ -328,7 +325,7 @@ export class GameScreenComponent implements OnInit {
   }
 
   parseTrigger(msg) {
-    let api = this.rootServer.branchApi;
+    // let api = this.rootServer.branchApi;
     console.log(msg);
 
     if (msg.trigger.hint != "") {
@@ -395,7 +392,7 @@ export class GameScreenComponent implements OnInit {
     }
   }
   parseVideo(msg) {
-    let api = this.rootServer.branchApi;
+    // let api = this.rootServer.branchApi;
     // let path = `${api}/${msg.videoFile}`;
     let path = `${msg.videoFile}`;
     this.playCustomVideo(msg.videoFile, false, false);
@@ -407,7 +404,7 @@ export class GameScreenComponent implements OnInit {
   // =============================================================
   // =============================================================
   parseAudio(msg) {
-    let api = this.rootServer.branchApi;
+    // let api = this.rootServer.branchApi;
     // let path = `${api}/${msg.audioFile}`;
     let path = `${msg.audioFile}`;
     this.customAudio = new Audio(path);

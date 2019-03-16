@@ -4,8 +4,8 @@ import { Injectable } from "@angular/core";
   providedIn: "root"
 })
 export class ConfigService {
-  public api = `http://192.168.0.180:4300`;
-  public branchApi = `http://192.168.0.180:4400`;
+  // public api = `http://localhost:4300`;
+  public api = `${location.protocol}//${location.host}`;
 
   public screenConfig = {
     configs: [
@@ -21,10 +21,7 @@ export class ConfigService {
   constructor() {}
 
   public getApiUrl() {
+    console.log(this.api);
     return this.api;
-  }
-
-  public getBranchApi() {
-    return this.branchApi;
   }
 }

@@ -8,8 +8,7 @@ import { ConfigService } from "./config.service";
   providedIn: "root"
 })
 export class RootServerService {
-  public api = `http://192.168.0.180:4300`;
-  public branchApi = `http://192.168.0.180:4400`;
+  public api = `http://localhost:4300`;
   public scriptInstances: any;
   public selectedScript: any;
   public selectedScriptInstance: any;
@@ -18,7 +17,6 @@ export class RootServerService {
   constructor(private http: HttpClient, public config: ConfigService) {
     this.observableScript = new BehaviorSubject<any>(this.selectedScript);
     this.api = config.getApiUrl();
-    this.branchApi = config.getBranchApi();
   }
 
   public loadScript(name): Observable<any> {
