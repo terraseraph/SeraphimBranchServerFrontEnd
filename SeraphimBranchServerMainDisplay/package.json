@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --port 4200",
     "build": "ng build",
+    "docker-build": "docker build --rm -f Dockerfile -t terraseraph/seraphimbranchserverfrontend:latest .",
+    "docker-push": "docker push terraseraph/seraphimbranchserverfrontend:latest",
+    "docker-pull": "docker pull terraseraph/seraphimbranchserverfrontend:latest",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -25,7 +28,9 @@
     "rxjs": "~6.3.3",
     "socket.io-client": "^2.2.0",
     "tslib": "^1.9.0",
-    "zone.js": "~0.8.26"
+    "zone.js": "~0.8.26",
+    "connect": "^3.6.6",
+    "serve-static": "^1.13.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.11.0",

@@ -4,8 +4,8 @@ import { Injectable } from "@angular/core";
   providedIn: "root"
 })
 export class ConfigService {
-  // public api = `http://localhost:4300`;
-  public api = `${location.protocol}//${location.host}`;
+  public api = `http://localhost:4300`;
+  // public api = `${location.protocol}//${location.host}`;
 
   public screenConfig = {
     configs: [
