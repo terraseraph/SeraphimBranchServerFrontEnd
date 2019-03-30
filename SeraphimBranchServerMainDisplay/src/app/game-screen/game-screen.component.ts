@@ -321,6 +321,11 @@ export class GameScreenComponent implements OnInit {
       t.minutes = t.minutes.toString().padStart(2, "0");
       t.seconds = t.seconds.toString().padStart(2, "0");
       this.time = t;
+      let hnt = msg.displayedHint;
+      var ht = {
+        hintText: hnt
+      };
+      this.parseHint(ht);
     }
   }
 

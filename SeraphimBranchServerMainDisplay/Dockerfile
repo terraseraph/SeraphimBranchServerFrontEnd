@@ -11,9 +11,9 @@
 # COPY --from=0 /home/dist/app /usr/share/nginx/html
 
 
-
-FROM johnpapa/angular-cli as client-app
-LABEL authors="John Papa"
+FROM node:10.15-stretch-slim
+# FROM johnpapa/angular-cli as client-app
+# LABEL authors="John Papa"
 WORKDIR /usr/src/app
 COPY ["package.json", "npm-shrinkwrap.json*", "./"]
 RUN npm install --silent
