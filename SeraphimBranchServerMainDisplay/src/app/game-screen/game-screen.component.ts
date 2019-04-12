@@ -28,6 +28,8 @@ export class GameScreenComponent implements OnInit {
   script: any;
   socketSubscription: Subscription;
   time: any;
+  gameEnded: boolean;
+  states: any;
 
   // Screen triggers
   triggers: any;
@@ -45,6 +47,9 @@ export class GameScreenComponent implements OnInit {
 
   // Screen Elements
   hintText: any;
+  hintTextOld: any;
+  hintHasAudio: boolean;
+  hintDefaultAudioPath: any;
 
   // Custom Configs
   customFontStyle: any;
@@ -54,6 +59,11 @@ export class GameScreenComponent implements OnInit {
   defaultBackgroundIsVideo: boolean;
 
   videoOverrideStyle: any;
+
+  DefaultStates = {
+    START: "start_instance",
+    END: "end_instance"
+  };
 
   @ViewChild("videoElem") videoElem: any;
   @ViewChild("imageElem") imageElem: any;
@@ -150,6 +160,12 @@ export class GameScreenComponent implements OnInit {
     } else {
       this.defaultBackgroundIsVideo = false;
     }
+    if (configs.defaultHintAudioPath != "") {
+      this.hintHasAudio = true;
+      this.hintDefaultAudioPath = configs.defaultHintAudioPath;
+    } else {
+      this.hintHasAudio = false;
+    }
     this.initAudio();
   }
 
@@ -160,15 +176,15 @@ export class GameScreenComponent implements OnInit {
     this.backgroundAudio = new Audio();
     this.customAudio = new Audio();
 
-    for (let trigger of this.script.triggers) {
-      if (trigger.audio != "") {
-        this.parseAudioType(
-          trigger.audio_type,
-          trigger.audio,
-          trigger.loop_audio
-        );
-      }
-    }
+    // for (let trigger of this.script.triggers) {
+    //   if (trigger.audio != "") {
+    //     this.parseAudioType(
+    //       trigger.audio_type,
+    //       trigger.audio,
+    //       trigger.loop_audio
+    //     );
+    //   }
+    // }
 
     this.audioArray = new Array();
     this.audioArray.push(this.startAudio);
@@ -178,6 +194,7 @@ export class GameScreenComponent implements OnInit {
     this.audioArray.push(this.customAudio);
   }
 
+  //Maybe not being called??
   parseAudioType(type, path, loop) {
     // let api = this.rootServer.branchApi;
     // path = `${api}/${path}`;
@@ -315,6 +332,17 @@ export class GameScreenComponent implements OnInit {
   }
 
   scriptUpdate(msg: any) {
+    if (msg.hasOwnProperty("states")) {
+      console.log("GETTING STATES", msg.states);
+      this.states = msg.states;
+      this.isStateActive("end_instance").then(active => {
+        if (active) {
+          this.gameEnded = true;
+        } else {
+          this.gameEnded = false;
+        }
+      });
+    }
     if (msg.hasOwnProperty("time")) {
       let t = msg.time;
       t.hours = t.hours.toString().padStart(2, "0");
@@ -334,10 +362,15 @@ export class GameScreenComponent implements OnInit {
     console.log(msg);
 
     if (msg.trigger.hint != "") {
+      console.log("IS HINT");
       this.hintText = msg.trigger.hint;
     }
 
+    //Check if the end_instance or start instance has occured
+    this.setDefaultStates(msg.trigger.trigger);
+
     if (msg.trigger.video != "") {
+      console.log("IS VIDEO");
       let t = msg.trigger;
       this.parseVideoType(t.video_type, t.video, t.loop_video, t.pause_timer);
       // this.videoElem.nativeElement.src = `${api}/${msg.trigger.video}`;
@@ -345,6 +378,7 @@ export class GameScreenComponent implements OnInit {
     }
 
     if (msg.trigger.audio != "") {
+      console.log("IS AUDIO");
       // let path = `${api}/${msg.trigger.audio}`;
       let path = `${msg.trigger.audio}`;
       // this.audioElem.nativeElement.src = `${api}/${msg.trigger.audio}`;
@@ -363,10 +397,11 @@ export class GameScreenComponent implements OnInit {
           break;
         case "background":
           // this.backgroundAudio = new Audio(path);
+          this.backgroundAudio.src = path;
           this.playBackgroundAudio();
           break;
         case "custom":
-          this.customAudio = new Audio(path);
+          this.customAudio.src = path;
           this.playCustomAudio();
           break;
 
@@ -391,9 +426,12 @@ export class GameScreenComponent implements OnInit {
       scale = initSize - scale;
       if (scale < 3) scale = 3;
       this.hintTextSize["font-size"] = `${scale}vw`;
-      console.log(this.hintTextSize);
+      // console.log(this.hintTextSize);
       this.hintText = msg.hintText;
-      this.playHintAudio();
+      if (this.hintText !== this.hintTextOld && this.hintText !== "") {
+        this.playHintAudio();
+        this.hintTextOld = this.hintText;
+      }
     }
   }
   parseVideo(msg) {
@@ -426,6 +464,7 @@ export class GameScreenComponent implements OnInit {
   playStartAudio() {
     this.startAudio.play();
     this.lowerBackgroundVolume();
+    console.log("START AUDIO LOWER");
     this.startAudio.onended = () => {
       this.raiseBackgroundVolume();
     };
@@ -433,6 +472,7 @@ export class GameScreenComponent implements OnInit {
 
   playEndAudio() {
     this.endAudio.play();
+    console.log("END AUDIO LOWER");
     this.lowerBackgroundVolume();
     this.endAudio.onended = () => {
       this.raiseBackgroundVolume();
@@ -440,19 +480,32 @@ export class GameScreenComponent implements OnInit {
   }
 
   playHintAudio() {
-    this.hintAudio.play();
-    this.lowerBackgroundVolume();
-    this.hintAudio.onended = () => {
-      this.raiseBackgroundVolume();
-    };
+    if (this.hintHasAudio) {
+      this.hintAudio.src = this.hintDefaultAudioPath;
+      this.hintAudio.play();
+      console.log("HINT AUDIO LOWER");
+      this.lowerBackgroundVolume();
+      this.hintAudio.onended = () => {
+        this.raiseBackgroundVolume();
+      };
+    }
   }
 
   playBackgroundAudio() {
     this.backgroundAudio.play();
   }
 
+  stopBackgroundAudio() {
+    this.backgroundAudio.pause();
+  }
+
+  stopBackgroundLooping() {
+    this.backgroundAudio.loop = false;
+  }
+
   playCustomAudio() {
     this.customAudio.play();
+    console.log("CUSTOM AUDIO LOWER");
     this.lowerBackgroundVolume();
     this.customAudio.onended = () => {
       this.raiseBackgroundVolume();
@@ -497,6 +550,7 @@ export class GameScreenComponent implements OnInit {
     this.enableVideoOverride(true);
     this.videoElemOverride.nativeElement.src = path;
     this.videoElemOverride.nativeElement.play();
+    this.lowerBackgroundVolume();
     this.videoElemOverride.nativeElement.loop = loop;
     if (pauseTimer) {
       this.rootServer.pauseInstanceTimer(this.scriptName).subscribe(result => {
@@ -505,16 +559,43 @@ export class GameScreenComponent implements OnInit {
     }
     this.videoElemOverride.nativeElement.onended = () => {
       this.enableVideoOverride(false);
+      this.raiseBackgroundVolume();
       if (pauseTimer) {
-        this.rootServer
-          .resumeInstanceTimer(this.scriptName)
-          .subscribe(result => {
-            console.log(result);
-          });
+        if (!this.gameEnded) {
+          console.log("HAS NOT ENDED!!!!");
+          this.rootServer
+            .resumeInstanceTimer(this.scriptName)
+            .subscribe(result => {
+              console.log(result);
+            });
+        }
       }
     };
     //if timer pauses
     //if loop? nah..
     // event .ended - resume
+  }
+  isStateActive(name: any) {
+    return new Promise((resolve, reject) => {
+      let result: boolean = false;
+      for (var i = 0; i < this.states.length; i++) {
+        if (this.states[i].name == name) {
+          result = this.states[i].active;
+          resolve(result);
+        }
+      }
+    });
+  }
+
+  setDefaultStates(triggerState) {
+    switch (triggerState) {
+      case this.DefaultStates.START:
+        this.gameEnded = false;
+        break;
+      case this.DefaultStates.END:
+        this.gameEnded = true;
+      default:
+        break;
+    }
   }
 }
