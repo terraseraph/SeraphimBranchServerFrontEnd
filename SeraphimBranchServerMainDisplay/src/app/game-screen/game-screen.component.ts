@@ -384,8 +384,8 @@ export class GameScreenComponent implements OnInit {
       // this.audioElem.nativeElement.src = `${api}/${msg.trigger.audio}`;
       switch (msg.trigger.audio_type) {
         case "start":
-          // this.startAudio = new Audio(path);
-          this.playStartAudio();
+          this.startAudio.src = path;
+          this.playStartAudio(msg.trigger.pause_timer);
           break;
         case "end":
           // this.endAudio = new Audio(path);
@@ -461,12 +461,27 @@ export class GameScreenComponent implements OnInit {
     }
   }
 
-  playStartAudio() {
+  playStartAudio(pauseTimer) {
     this.startAudio.play();
     this.lowerBackgroundVolume();
     console.log("START AUDIO LOWER");
+    if (pauseTimer) {
+      this.rootServer.pauseInstanceTimer(this.scriptName).subscribe(result => {
+        console.log(result);
+      });
+    }
     this.startAudio.onended = () => {
       this.raiseBackgroundVolume();
+      if (pauseTimer) {
+        if (!this.gameEnded) {
+          console.log("HAS NOT ENDED!!!!");
+          this.rootServer
+            .resumeInstanceTimer(this.scriptName)
+            .subscribe(result => {
+              console.log(result);
+            });
+        }
+      }
     };
   }
 
