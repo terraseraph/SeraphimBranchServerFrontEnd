@@ -1,6 +1,7 @@
 <div class="timerDiv" *ngIf="showTimer">
   <div class="timeElement" [ngStyle]="customFontStyle">
-    {{ time?.hours }} : {{ time?.minutes }} : {{ time?.seconds }}
+    {{ time?.hours }} {{ colon }} {{ time?.minutes }} {{ colon }}
+    {{ time?.seconds }}
   </div>
 </div>
 
@@ -14,9 +15,8 @@
   <video #videoElem></video>
 </div>
 
-
 <div id="imageDiv" name="imageDiv">
-  <img #imageElem>
+  <img #imageElem />
 </div>
 
 <div id="videoDivOverride" name="videoDivOverride">

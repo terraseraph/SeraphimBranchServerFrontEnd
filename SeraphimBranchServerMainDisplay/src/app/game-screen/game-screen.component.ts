@@ -28,6 +28,7 @@ export class GameScreenComponent implements OnInit {
   script: any;
   socketSubscription: Subscription;
   time: any;
+  colon: any;
   gameEnded: boolean;
   states: any;
 
@@ -62,7 +63,8 @@ export class GameScreenComponent implements OnInit {
 
   DefaultStates = {
     START: "start_instance",
-    END: "end_instance"
+    END: "end_instance",
+    TIMER_COMPLETE: "timer_complete "
   };
 
   @ViewChild("videoElem") videoElem: any;
@@ -81,6 +83,8 @@ export class GameScreenComponent implements OnInit {
       // this.getScreenConfig();
     });
     this.socketSubscribe();
+    this.initAudio();
+    this.colon = " ";
   }
 
   // getScreenConfig() {
@@ -105,29 +109,6 @@ export class GameScreenComponent implements OnInit {
     let configs = this.script.screenConfigs;
     for (var i = 0; i < configs.length; i++) {
       if (configs[i].name === this.screenName) {
-        //     this.screenConfig = configs[i];
-        //     console.log(this.screenConfig);
-
-        //     // Show the timer
-        //     this.showTimer = configs[i].showTimer;
-
-        //     // Show hints
-        //     this.showHints = configs[i].showHints;
-
-        //     //Custom screen font
-        //     this.customFontStyle = {
-        //       "font-family": configs[i].font,
-        //       color: configs[i].font_colour
-        //     };
-
-        //     // Set default background type
-        //     if (configs[i].backgroundType === "Video") {
-        //       this.initVideo(configs[i].backgroundPath);
-        //       this.defaultBackgroundIsVideo = true;
-        //     } else {
-        //       this.defaultBackgroundIsVideo = false;
-        // }
-        //     this.initAudio();
         this.setConfigs(configs[i]);
       }
     }
@@ -166,7 +147,6 @@ export class GameScreenComponent implements OnInit {
     } else {
       this.hintHasAudio = false;
     }
-    this.initAudio();
   }
 
   initAudio() {
@@ -176,53 +156,12 @@ export class GameScreenComponent implements OnInit {
     this.backgroundAudio = new Audio();
     this.customAudio = new Audio();
 
-    // for (let trigger of this.script.triggers) {
-    //   if (trigger.audio != "") {
-    //     this.parseAudioType(
-    //       trigger.audio_type,
-    //       trigger.audio,
-    //       trigger.loop_audio
-    //     );
-    //   }
-    // }
-
     this.audioArray = new Array();
     this.audioArray.push(this.startAudio);
     this.audioArray.push(this.endAudio);
     this.audioArray.push(this.hintAudio);
     this.audioArray.push(this.backgroundAudio);
     this.audioArray.push(this.customAudio);
-  }
-
-  //Maybe not being called??
-  parseAudioType(type, path, loop) {
-    // let api = this.rootServer.branchApi;
-    // path = `${api}/${path}`;
-    path = `${path}`;
-    switch (type) {
-      case "start":
-        this.startAudio = new Audio(path);
-        if (loop) this.startAudio.loop = true;
-        break;
-      case "end":
-        this.endAudio = new Audio(path);
-        if (loop) this.endAudio.loop = true;
-        break;
-      case "hint":
-        this.hintAudio = new Audio(path);
-        if (loop) this.hintAudio.loop = true;
-        break;
-      case "background":
-        this.backgroundAudio = new Audio(path);
-        if (loop) this.backgroundAudio.loop = true;
-        break;
-      case "custom":
-        this.customAudio = new Audio(path);
-        if (loop) this.customAudio.loop = true;
-        break;
-      default:
-        break;
-    }
   }
 
   initVideo(videoPath) {
@@ -238,29 +177,6 @@ export class GameScreenComponent implements OnInit {
     this.enableVideoOverride(false);
     this.playBackgroundVideo(videoPath, true, false);
   }
-  // initVideo() {
-  //   //For background video
-  //   this.videoElem.nativeElement.setAttribute("width", "100%");
-  //   this.videoElem.nativeElement.setAttribute("height", "100%");
-  //   this.videoElem.nativeElement.setAttribute("type", "video/mp4");
-
-  //   //For Playing videos over the top
-  //   this.videoElemOverride.nativeElement.setAttribute("width", "100%");
-  //   this.videoElemOverride.nativeElement.setAttribute("height", "100%");
-  //   this.videoElemOverride.nativeElement.setAttribute("type", "video/mp4");
-  //   this.enableVideoOverride(false);
-  //   for (let trigger of this.script.triggers) {
-  //     if (trigger.video != "") {
-  //       if (trigger.video_type == "background") {
-  //         this.playBackgroundVideo(
-  //           trigger.video,
-  //           trigger.loop_video,
-  //           trigger.pause_timer
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
 
   initImage(imagePath) {
     this.imageElem.nativeElement.setAttribute("width", "100%");
@@ -296,6 +212,8 @@ export class GameScreenComponent implements OnInit {
             message.scriptName === this.scriptName &&
             message.screenName === this.screenName
           ) {
+            window.location.reload();
+          } else if (message.all === true) {
             window.location.reload();
           }
         }
@@ -345,6 +263,7 @@ export class GameScreenComponent implements OnInit {
     }
     if (msg.hasOwnProperty("time")) {
       let t = msg.time;
+      this.colon = ":";
       t.hours = t.hours.toString().padStart(2, "0");
       t.minutes = t.minutes.toString().padStart(2, "0");
       t.seconds = t.seconds.toString().padStart(2, "0");
@@ -373,36 +292,42 @@ export class GameScreenComponent implements OnInit {
       console.log("IS VIDEO");
       let t = msg.trigger;
       this.parseVideoType(t.video_type, t.video, t.loop_video, t.pause_timer);
-      // this.videoElem.nativeElement.src = `${api}/${msg.trigger.video}`;
-      // this.videoElem.nativeElement.play();
     }
 
     if (msg.trigger.audio != "") {
       console.log("IS AUDIO");
-      // let path = `${api}/${msg.trigger.audio}`;
+      console.log(msg.trigger.audio_type);
+
+      let pause = msg.trigger.pause_timer;
+      let loop = msg.trigger.loop_audio;
+      if (pause == undefined) {
+        pause = false;
+      }
+      if (loop == undefined) {
+        loop = false;
+      }
+
       let path = `${msg.trigger.audio}`;
-      // this.audioElem.nativeElement.src = `${api}/${msg.trigger.audio}`;
       switch (msg.trigger.audio_type) {
         case "start":
           this.startAudio.src = path;
-          this.playStartAudio(msg.trigger.pause_timer);
+          this.playStartAudio(pause, loop);
           break;
         case "end":
-          // this.endAudio = new Audio(path);
-          this.playEndAudio();
+          this.endAudio.src = path;
+          this.playEndAudio(pause, loop);
           break;
         case "hint":
-          // this.hintAudio = new Audo(path);
-          this.playHintAudio();
+          this.hintAudio.src = path;
+          this.playHintAudio(pause, loop);
           break;
         case "background":
-          // this.backgroundAudio = new Audio(path);
           this.backgroundAudio.src = path;
-          this.playBackgroundAudio();
+          this.playBackgroundAudio(pause, loop);
           break;
         case "custom":
           this.customAudio.src = path;
-          this.playCustomAudio();
+          this.playCustomAudio(pause, loop);
           break;
 
         default:
@@ -429,7 +354,7 @@ export class GameScreenComponent implements OnInit {
       // console.log(this.hintTextSize);
       this.hintText = msg.hintText;
       if (this.hintText !== this.hintTextOld && this.hintText !== "") {
-        this.playHintAudio();
+        this.playHintAudio(false, false);
         this.hintTextOld = this.hintText;
       }
     }
@@ -447,11 +372,9 @@ export class GameScreenComponent implements OnInit {
   // =============================================================
   // =============================================================
   parseAudio(msg) {
-    // let api = this.rootServer.branchApi;
-    // let path = `${api}/${msg.audioFile}`;
     let path = `${msg.audioFile}`;
-    this.customAudio = new Audio(path);
-    this.playCustomAudio();
+    this.customAudio.src = path;
+    this.playCustomAudio(false, false);
   }
 
   stopAllAudio() {
@@ -461,7 +384,8 @@ export class GameScreenComponent implements OnInit {
     }
   }
 
-  playStartAudio(pauseTimer) {
+  playStartAudio(pauseTimer, loop) {
+    this.startAudio.loop = loop;
     this.startAudio.play();
     this.lowerBackgroundVolume();
     console.log("START AUDIO LOWER");
@@ -485,8 +409,9 @@ export class GameScreenComponent implements OnInit {
     };
   }
 
-  playEndAudio() {
+  playEndAudio(pause, loop) {
     this.endAudio.play();
+    this.endAudio.loop = loop;
     console.log("END AUDIO LOWER");
     this.lowerBackgroundVolume();
     this.endAudio.onended = () => {
@@ -494,7 +419,7 @@ export class GameScreenComponent implements OnInit {
     };
   }
 
-  playHintAudio() {
+  playHintAudio(pause, loop) {
     if (this.hintHasAudio) {
       this.hintAudio.src = this.hintDefaultAudioPath;
       this.hintAudio.play();
@@ -506,7 +431,8 @@ export class GameScreenComponent implements OnInit {
     }
   }
 
-  playBackgroundAudio() {
+  playBackgroundAudio(pause, loop) {
+    this.backgroundAudio.loop = loop;
     this.backgroundAudio.play();
   }
 
@@ -518,7 +444,7 @@ export class GameScreenComponent implements OnInit {
     this.backgroundAudio.loop = false;
   }
 
-  playCustomAudio() {
+  playCustomAudio(pauseTimer, loop) {
     this.customAudio.play();
     console.log("CUSTOM AUDIO LOWER");
     this.lowerBackgroundVolume();
@@ -605,10 +531,16 @@ export class GameScreenComponent implements OnInit {
   setDefaultStates(triggerState) {
     switch (triggerState) {
       case this.DefaultStates.START:
+        this.colon = " ";
+        this.time = null;
         this.gameEnded = false;
         break;
       case this.DefaultStates.END:
         this.gameEnded = true;
+        this.stopBackgroundAudio();
+        break;
+      case this.DefaultStates.TIMER_COMPLETE:
+        this.stopBackgroundLooping();
       default:
         break;
     }

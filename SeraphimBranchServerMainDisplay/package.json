@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0 --port 4200",
+    "start": "ng serve --aot --host 0.0.0.0 --port 4200",
     "build": "ng build",
     "docker-build": "docker build --rm -f Dockerfile -t terraseraph/seraphimbranchserverfrontend:latest .",
     "docker-push": "docker push terraseraph/seraphimbranchserverfrontend:latest",
