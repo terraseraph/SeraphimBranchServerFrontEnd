@@ -204,7 +204,6 @@ export class GameScreenComponent implements OnInit {
         if (message.hasOwnProperty("instance_update")) {
           if (message.instance_update.name === this.scriptName) {
             this.scriptUpdate(message.instance_update);
-            console.log(message);
           }
         }
         if (message.hasOwnProperty("reload")) {
@@ -218,12 +217,9 @@ export class GameScreenComponent implements OnInit {
           }
         }
         if (message.hasOwnProperty("message_type")) {
-          if (
-            message.scriptName === this.scriptName &&
-            message.screenName === this.screenName
-          ) {
+          console.log(message);
+          if (this.validateMessage(message)) {
             let msg = message;
-
             switch (message.message_type) {
               case "trigger":
                 this.parseTrigger(msg);
@@ -242,11 +238,21 @@ export class GameScreenComponent implements OnInit {
               default:
                 break;
             }
-          } else if (message.message_type === "hint") {
-            this.parseHint(message);
           }
         }
       });
+  }
+
+  validateMessage(msg) {
+    if (msg.scriptName === this.scriptName) {
+      if (msg.screenName === this.screenName) {
+        return true;
+      } else if (msg.screenName === "all" || msg.screenName === undefined) {
+        return true;
+      } else if (msg.screenName !== this.screenName) {
+        return false;
+      }
+    }
   }
 
   scriptUpdate(msg: any) {
