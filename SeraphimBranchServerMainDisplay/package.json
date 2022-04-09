@@ -34,7 +34,7 @@
     "es6-shim": "^0.35.5",
     "express": "^4.17.1",
     "express-serve-static-core": "^0.1.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "path": "^0.12.7",
     "pkg": "^4.4.0",
     "rxjs": "~6.3.3",
